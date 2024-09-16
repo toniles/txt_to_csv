@@ -1,0 +1,23 @@
+{
+  "EntradasSAPRNB": {
+    "name": "EntradasSAPRNB",
+    "row_delimiter": "|",
+    "col_delimiter": ";",
+    "num_columns": 13,
+    "column_names": [
+      "???",
+      "VALOR1",
+      "VALOR1(denuevo)",
+      "FECHA",
+      "LINEA",
+      "REFERENCIA",
+      "PIEZAS",
+      "?",
+      "HU",
+      "BLOQUEADO",
+      "?",
+      "?",
+      "?"
+    ]
+  }
+}

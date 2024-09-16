@@ -2,9 +2,26 @@ import json
 import os
 import pandas as pd
 from typing import List, Dict
+from colorama import init, Fore, Back, Style
+
+# Inicializar colorama
+init(autoreset=True)
 
 CONFIG_FILE = 'configs.json'
 OUTPUT_FOLDER = 'output'
+
+ASCII_LOGO = """
+ ██████ ██      ██ ██████  ██████   ██████   █████  ██████  ██████          ██   ██   ██                ██████ ███████ ██    ██     
+██      ██      ██ ██   ██ ██   ██ ██    ██ ██   ██ ██   ██ ██   ██          ██   ██   ██              ██      ██      ██    ██     
+██      ██      ██ ██████  ██████  ██    ██ ███████ ██████  ██   ██           ██   ██   ██             ██      ███████ ██    ██     
+██      ██      ██ ██      ██   ██ ██    ██ ██   ██ ██   ██ ██   ██          ██   ██   ██              ██           ██  ██  ██      
+ ██████ ███████ ██ ██      ██████   ██████  ██   ██ ██   ██ ██████          ██   ██   ██                ██████ ███████   ████       
+                                                                                                                                                                                                                                                                                                 
+"""
+
+def print_ascii_logo():
+    print(Fore.CYAN + ASCII_LOGO)
+    print(Style.RESET_ALL)
 
 def load_configs() -> Dict:
     if os.path.exists(CONFIG_FILE):
@@ -17,12 +34,12 @@ def save_configs(configs: Dict):
         json.dump(configs, f, indent=2)
 
 def create_config() -> Dict:
-    print("\nCreando nueva configuración:")
-    name = input("Nombre de la configuración: ")
-    row_delimiter = input("Delimitador de filas: ")
-    col_delimiter = input("Delimitador de columnas: ")
-    num_columns = int(input("Número de columnas: "))
-    column_names = [input(f"Nombre de la columna {i+1}: ") for i in range(num_columns)]
+    print(Fore.YELLOW + "\nCreando nueva configuración:")
+    name = input(Fore.GREEN + "Nombre de la configuración: " + Style.RESET_ALL)
+    row_delimiter = input(Fore.GREEN + "Delimitador de filas: " + Style.RESET_ALL)
+    col_delimiter = input(Fore.GREEN + "Delimitador de columnas: " + Style.RESET_ALL)
+    num_columns = int(input(Fore.GREEN + "Número de columnas: " + Style.RESET_ALL))
+    column_names = [input(Fore.GREEN + f"Nombre de la columna {i+1}: " + Style.RESET_ALL) for i in range(num_columns)]
     
     return {
         "name": name,
@@ -40,7 +57,7 @@ def process_data(data: str, config: Dict) -> pd.DataFrame:
         if len(cols) == config['num_columns']:
             processed_rows.append(cols)
         else:
-            print(f"Advertencia: Fila ignorada debido a número incorrecto de columnas: {row}")
+            print(Fore.RED + f"Advertencia: Fila ignorada debido a número incorrecto de columnas: {row}" + Style.RESET_ALL)
     
     return pd.DataFrame(processed_rows, columns=config['column_names'])
 
@@ -50,19 +67,19 @@ def export_to_csv(df: pd.DataFrame, config_name: str):
     
     filename = f"{OUTPUT_FOLDER}/{config_name}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv"
     df.to_csv(filename, index=False)
-    print(f"\nDatos exportados a: {filename}")
+    print(Fore.GREEN + f"\nDatos exportados a: {filename}" + Style.RESET_ALL)
 
 def select_config(configs: Dict) -> Dict:
     while True:
-        print("\nConfiguraciones disponibles:")
+        print(Fore.YELLOW + "\nConfiguraciones disponibles:")
         for i, (name, config) in enumerate(configs.items(), 1):
-            print(f"{i}. {name}")
-        print("0. Crear nueva configuración")
+            print(Fore.CYAN + f"{i}. {name}")
+        print(Fore.MAGENTA + "0. Crear nueva configuración")
         
-        choice = input("Seleccione una configuración (0-4): ")
+        choice = input(Fore.GREEN + "Seleccione una configuración (0-4): " + Style.RESET_ALL)
         if choice == '0':
             if len(configs) >= 4:
-                print("Ya existen 4 configuraciones. Elimine una antes de crear una nueva.")
+                print(Fore.RED + "Ya existen 4 configuraciones. Elimine una antes de crear una nueva." + Style.RESET_ALL)
             else:
                 new_config = create_config()
                 configs[new_config['name']] = new_config
@@ -71,11 +88,11 @@ def select_config(configs: Dict) -> Dict:
         elif choice.isdigit() and 1 <= int(choice) <= len(configs):
             return list(configs.values())[int(choice) - 1]
         else:
-            print("Opción no válida. Intente de nuevo.")
+            print(Fore.RED + "Opción no válida. Intente de nuevo." + Style.RESET_ALL)
 
 def process_continuous(config: Dict):
-    print(f"\nUsando configuración: {config['name']}")
-    print("Pegue los datos a procesar (presione Enter dos veces para finalizar, o escriba 'salir' para volver al menú principal):")
+    print(Fore.YELLOW + f"\nUsando configuración: {config['name']}")
+    print(Fore.CYAN + "Pegue los datos a procesar (presione Enter dos veces para finalizar, o escriba 'salir' para volver al menú principal):")
     while True:
         lines = []
         while True:
@@ -93,22 +110,24 @@ def process_continuous(config: Dict):
         data = '\n'.join(lines)
         df = process_data(data, config)
         export_to_csv(df, config['name'])
-        print("\nListo para procesar más datos. Pegue los nuevos datos o escriba 'salir' para volver al menú principal:")
+        print(Fore.GREEN + "\nDatos procesados con éxito." + Style.RESET_ALL)
+        print(Fore.CYAN + "Listo para procesar más datos. Pegue los nuevos datos o escriba 'salir' para volver al menú principal:")
 
 def main():
     configs = load_configs()
     
     while True:
-        print("\n--- Procesador de Datos ---")
-        print("1. Seleccionar configuración y procesar datos")
-        print("2. Gestionar configuraciones")
-        print("3. Salir")
+        print_ascii_logo()
+        print(Fore.YELLOW + "--- Procesa cualquier texto con doble delimitador a CSV ---")
+        print(Fore.CYAN + "1. Seleccionar configuración y procesar datos")
+        print(Fore.CYAN + "2. Gestionar configuraciones")
+        print(Fore.CYAN + "3. Salir")
         
-        choice = input("Seleccione una opción: ")
+        choice = input(Fore.GREEN + "Seleccione una opción: " + Style.RESET_ALL)
         
         if choice == '1':
             if not configs:
-                print("No hay configuraciones guardadas. Cree una primero.")
+                print(Fore.YELLOW + "No hay configuraciones guardadas. Cree una primero.")
                 new_config = create_config()
                 configs[new_config['name']] = new_config
                 save_configs(configs)
@@ -119,19 +138,19 @@ def main():
         
         elif choice == '2':
             config = select_config(configs)
-            print(f"\nConfiguración seleccionada: {config['name']}")
-            print(json.dumps(config, indent=2))
-            if input("¿Desea eliminar esta configuración? (s/n): ").lower() == 's':
+            print(Fore.YELLOW + f"\nConfiguración seleccionada: {config['name']}")
+            print(Fore.CYAN + json.dumps(config, indent=2))
+            if input(Fore.MAGENTA + "¿Desea eliminar esta configuración? (s/n): " + Style.RESET_ALL).lower() == 's':
                 del configs[config['name']]
                 save_configs(configs)
-                print("Configuración eliminada.")
+                print(Fore.GREEN + "Configuración eliminada.")
         
         elif choice == '3':
-            print("¡Hasta luego!")
+            print(Fore.YELLOW + "¡Hasta luego!" + Style.RESET_ALL)
             break
         
         else:
-            print("Opción no válida. Intente de nuevo.")
+            print(Fore.RED + "Opción no válida. Intente de nuevo." + Style.RESET_ALL)
 
 if __name__ == "__main__":
     main()
